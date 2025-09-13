@@ -20,6 +20,8 @@ const doms = {
 var songBodyHeight = 0 //显示歌词区域高度
 var liHeight = 0 //li的高度
 
+var isPlay = false
+
 //从本地储存中获取
 let songIndex = localStorage.getItem('songIndexStore') || 0
 var lrcData = []
@@ -153,12 +155,13 @@ doms.audio.addEventListener('timeupdate', () => {
 
 //歌曲播放暂停
 doms.songBtn.addEventListener('click', () => {
-  if (doms.songBtn.innerHTML == '▶') {
+  isPlay = !isPlay
+  if (isPlay) {
     doms.audio.play()
-    doms.songBtn.innerHTML = '⏸'
-  } else {
+    doms.songBtn.innerHTML = '<span class="iconfont icon-zanting"></span>'
+  }else{
     doms.audio.pause()
-    doms.songBtn.innerHTML = '▶'
+    doms.songBtn.innerHTML = '<span class="iconfont icon-bofang"></span>'
   }
 })
 

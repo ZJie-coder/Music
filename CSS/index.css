@@ -83,7 +83,7 @@ body {
 .container .virtualPlayer .btnGroup {
   margin: 0 auto;
   margin-top: 30px;
-  width: 60vw;
+  width: 70vw;
   max-width: 400px;
   display: flex;
   justify-content: space-around;
@@ -95,12 +95,17 @@ body {
   background-color: #000;
   border: none;
   font-size: 25px;
-  width: 33%;
-  height: 33px;
+  width: 30%;
+  height: 40px;
+  margin: 0 auto;
+  margin-top: 10px;
+}
+.container .virtualPlayer .btnGroup .nextBtn {
+  margin-right: 10px;
 }
 .container .virtualPlayer .currentTime {
   position: absolute;
-  left: 50px;
+  left: 45px;
   top: 5px;
   font-size: 13px;
   color: #aaa;
