@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="音乐播放器，列表循环播放，支持拖拽进度条，切换歌曲，登陆账号">
   <title>音乐播放器</title>
   <link rel="shortcut icon" href="./assets/favicon.ico" type="image/x-icon">
   <link rel="stylesheet" href="./fonts/iconfont.css">
@@ -23,13 +24,13 @@
       <span class="currentTime">00:00</span>
       <span class="endTime">03:25</span>
       <div class="btnGroup">
-        <button class="lastBtn Btn">
+        <button class="lastBtn Btn" aria-label="下一首">
           <span class="iconfont icon-shangyishou"></span>
         </button>
-        <button class="songBtn Btn">
+        <button class="songBtn Btn" aria-label="播放/暂停">
           <span class="iconfont icon-bofang"></span>
         </button>
-        <button class="nextBtn Btn">
+        <button class="nextBtn Btn" aria-label="下一首">
         <span class="iconfont icon-xiayishou"></span>
         </button>
       </div>
