@@ -8,24 +8,28 @@ const doms = {
   audio: document.querySelector('audio'),
   container: document.querySelector('.container'),
   songbody: document.querySelector('.songBody'),
-  sogngName: document.querySelector('.songName'),
+  songName: document.querySelector('.songName'),
   songBtn: document.querySelector('.songBtn'),
   nextBtn: document.querySelector('.nextBtn'),
   lastBtn: document.querySelector('.lastBtn'),
   endTime: document.querySelector('.endTime'),
   currentTime: document.querySelector('.currentTime'),
-  rate:document.querySelector('.rate'),
+  rate: document.querySelector('.rate'),
 }
-//当前歌曲
-const lrc = songData[0]
-doms.sogngName.innerHTML = lrc.song //歌曲
-doms.audio.src = lrc.scr//音频
 
+var songBodyHeight = 0 //显示歌词区域高度
+var liHeight = 0 //li的高度
+
+//从本地储存中获取
+let songIndex = localStorage.getItem('songIndexStore') || 0
 var lrcData = []
 /**
  * 初始化一个歌词数据
  */
 const initLrc = () => {
+  let lrc = songData[songIndex]
+  doms.songName.innerHTML = lrc.song //歌曲
+  doms.audio.src = lrc.src//音频
   const lrcArr = lrc.content.split('\n')
   lrcData = lrcArr.map(item => {
     const part = item.split(']') //[ '[00:22.753', '该怎么去形容你最贴切' ]
@@ -59,6 +63,7 @@ const createLrcElement = () => {
     frag.appendChild(li)
   }
   doms.ul.appendChild(frag)
+  getHeight()
 }
 /**
  * 获取当前播放的歌词下标
@@ -68,7 +73,7 @@ const findIndex = () => {
   const currentTime = doms.audio.currentTime
   for (let i = 0; i < lrcData.length; i++) {
     if (lrcData[i].time > currentTime) {
-      const lrc = i - 1 <= 0 ? 0 : i -1
+      const lrc = i - 1 <= 0 ? 0 : i - 1
       renderLrc(lrc)
       return lrc
     }
@@ -77,7 +82,7 @@ const findIndex = () => {
   return lrcData.length - 1
 }
 /**
- * 渲染当前歌词
+ * 渲染当前歌词 高亮
  * @param {Number} index 
  */
 const renderLrc = (index) => {
@@ -89,12 +94,12 @@ const renderLrc = (index) => {
   li = doms.ul.children[index]
   li.classList.add('active')
 }
-initLrc()
-createLrcElement()
 
-const songBodyHeight = doms.songbody.offsetHeight
-const liHeight = doms.ul.children[0].offsetHeight//li的高度
-
+//获得显示区域高度和li的高度
+const getHeight = () => {
+  songBodyHeight = doms.songbody.offsetHeight
+  liHeight = doms.ul.children[0].offsetHeight//li的高度
+}
 
 /**
  * 歌词偏移
@@ -108,7 +113,7 @@ const setOffSet = () => {
     moveHeight = 0
   }
   // if (moveHeight > maxOffSet) {
-    // moveHeight = maxOffSet
+  // moveHeight = maxOffSet
   // }
   doms.ul.style.transform = `translateY(${-moveHeight}px)`
   renderLrc(index)
@@ -128,15 +133,14 @@ const fomateTime = (time) => {
  * 播放进度条
  */
 const rateUpdate = () => {
-  return (doms.audio.currentTime / doms.audio.duration) *100
+  return (doms.audio.currentTime / doms.audio.duration) * 100
 }
 
 var duration //歌曲总时长
 //监听MP3数据加载完成
-doms.audio.addEventListener('loadedmetadata',  () => {
+doms.audio.addEventListener('loadedmetadata', () => {
   duration = fomateTime(doms.audio.duration)
   doms.endTime.innerHTML = duration
-
   rateUpdate()
 })
 
@@ -157,3 +161,54 @@ doms.songBtn.addEventListener('click', () => {
     doms.songBtn.innerHTML = '▶'
   }
 })
+
+//歌曲序号修改
+const songIndexUpdate = (number) => {
+  songIndex += number
+  if (songIndex >= songData.length) {
+    songIndex = 0
+  }
+  if (songIndex < 0) {
+    songIndex = songData.length - 1
+  }
+}
+
+//监听播放结束
+const songEndSwitch = () => {
+  doms.audio.addEventListener('ended', () => {
+    songIndexUpdate(1)//默认播放下一首
+    localStorage.setItem('songIndexStore', songIndex)
+    mounted()
+    doms.audio.play()
+  })
+}
+
+
+doms.nextBtn.addEventListener('click', () => {
+  songIndexUpdate(1)
+  mounted()
+  doms.audio.play()
+})
+doms.lastBtn.addEventListener('click', () => {
+  songIndexUpdate(-1)
+  mounted()
+  doms.audio.play()
+})
+
+//重置
+const reset = () => {
+  doms.ul.innerHTML = ''
+  duration = 0
+  doms.rate.style.width = 0
+}
+/**
+ * 构建
+ */
+const mounted = async () => {
+  await initLrc()
+  await reset()
+  await createLrcElement()
+}
+
+mounted()
+songEndSwitch()
