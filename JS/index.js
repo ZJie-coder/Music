@@ -20,7 +20,7 @@ const doms = {
 const lrc = songData[0]
 doms.sogngName.innerHTML = lrc.song //歌曲
 doms.audio.src = lrc.scr//音频
-doms.endTime.innerHTML = doms.audio.duration
+
 var lrcData = []
 /**
  * 初始化一个歌词数据
@@ -132,6 +132,7 @@ const rateUpdate = () => {
 }
 
 var duration //歌曲总时长
+//监听MP3数据加载完成
 doms.audio.addEventListener('loadedmetadata',  () => {
   duration = fomateTime(doms.audio.duration)
   doms.endTime.innerHTML = duration
