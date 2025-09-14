@@ -154,7 +154,8 @@ doms.audio.addEventListener('timeupdate', () => {
 })
 doms.audio.addEventListener('canplaythrough',()=>{
   doms.audio.play()
-})
+})//后续增加提前load下一首
+
 //歌曲播放暂停
 doms.songBtn.addEventListener('click', () => {
   isPlay = !isPlay
@@ -162,6 +163,12 @@ doms.songBtn.addEventListener('click', () => {
     doms.audio.play()
   }else{
     doms.audio.pause()
+  }
+})
+//键盘控制
+document.addEventListener('keyup', (e) => {
+  if (e.key === 'Enter') {
+    doms.songBtn.click()
   }
 })
 
