@@ -158,10 +158,8 @@ doms.songBtn.addEventListener('click', () => {
   isPlay = !isPlay
   if (isPlay) {
     doms.audio.play()
-    doms.songBtn.innerHTML = '<span class="iconfont icon-zanting"></span>'
   }else{
     doms.audio.pause()
-    doms.songBtn.innerHTML = '<span class="iconfont icon-bofang"></span>'
   }
 })
 
@@ -198,6 +196,12 @@ doms.lastBtn.addEventListener('click', () => {
   doms.audio.play()
 })
 
+doms.audio.addEventListener('play',()=>{
+  doms.songBtn.innerHTML = '<span class="iconfont icon-zanting"></span>'
+})
+doms.audio.addEventListener('pause',()=>{
+  doms.songBtn.innerHTML = '<span class="iconfont icon-bofang"></span>'
+})
 //重置
 const reset = () => {
   doms.ul.innerHTML = ''
