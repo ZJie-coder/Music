@@ -197,9 +197,11 @@ doms.lastBtn.addEventListener('click', () => {
 })
 
 doms.audio.addEventListener('play',()=>{
+  isPlay = true
   doms.songBtn.innerHTML = '<span class="iconfont icon-zanting"></span>'
 })
 doms.audio.addEventListener('pause',()=>{
+  isPlay = false
   doms.songBtn.innerHTML = '<span class="iconfont icon-bofang"></span>'
 })
 //重置
