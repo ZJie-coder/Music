@@ -152,7 +152,9 @@ doms.audio.addEventListener('timeupdate', () => {
   doms.rate.style.width = `${rateUpdate()}%`
   setOffSet()
 })
-
+doms.audio.addEventListener('canplay',()=>{
+  doms.audio.play()
+})
 //歌曲播放暂停
 doms.songBtn.addEventListener('click', () => {
   isPlay = !isPlay
