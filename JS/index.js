@@ -1,29 +1,13 @@
 import { songData } from "../Lrc/song.js";
-
+import { doms } from "./doms.js";
 const delayTime = -0.5  //歌词移动延迟时间 （负数表示 提前）
-
-//获取dom
-const doms = {
-  ul: document.querySelector('ul'),
-  audio: document.querySelector('audio'),
-  container: document.querySelector('.container'),
-  songbody: document.querySelector('.songBody'),
-  songName: document.querySelector('.songName'),
-  songBtn: document.querySelector('.songBtn'),
-  nextBtn: document.querySelector('.nextBtn'),
-  lastBtn: document.querySelector('.lastBtn'),
-  endTime: document.querySelector('.endTime'),
-  currentTime: document.querySelector('.currentTime'),
-  rate: document.querySelector('.rate'),
-}
-
 var songBodyHeight = 0 //显示歌词区域高度
 var liHeight = 0 //li的高度
-
 var isPlay = false
+var duration //歌曲总时长
 
 //从本地储存中获取
-let songIndex = localStorage.getItem('songIndexStore') || 0
+let songIndex = +localStorage.getItem('songIndexStore') || 0
 var lrcData = []
 /**
  * 初始化一个歌词数据
@@ -43,9 +27,8 @@ const initLrc = () => {
     }
   })
 }
-
 /**
- * 格式化时间
+ * 格式化时间（s）
  * @param {String} timeStr 
  * @returns 
  */
@@ -76,19 +59,24 @@ const findIndex = () => {
   for (let i = 0; i < lrcData.length; i++) {
     if (lrcData[i].time > currentTime) {
       const lrc = i - 1 <= 0 ? 0 : i - 1
-      renderLrc(lrc)
       return lrc
     }
   }
-  renderLrc(lrcData.length - 1)
   return lrcData.length - 1
+}
+/**
+ * 渲染播放器（歌词样式、偏移）
+ */
+const renderPlayer = ()=>{
+  const index = findIndex()
+  renderLrc(index)
+  setOffSet(index)
 }
 /**
  * 渲染当前歌词 高亮
  * @param {Number} index 
  */
 const renderLrc = (index) => {
-
   var li = document.querySelector('.active')
   if (li) {
     li.classList.remove('active')
@@ -96,18 +84,15 @@ const renderLrc = (index) => {
   li = doms.ul.children[index]
   li.classList.add('active')
 }
-
 //获得显示区域高度和li的高度
 const getHeight = () => {
   songBodyHeight = doms.songbody.offsetHeight
   liHeight = doms.ul.children[0].offsetHeight//li的高度
 }
-
 /**
  * 歌词偏移
  */
-const setOffSet = () => {
-  let index = findIndex()
+const setOffSet = (index) => {
   let moveHeight = liHeight * (index + 0.5) - songBodyHeight / 2
   // const maxOffSet = doms.ul.offsetHeight - songBodyHeight
 
@@ -118,7 +103,6 @@ const setOffSet = () => {
   // moveHeight = maxOffSet
   // }
   doms.ul.style.transform = `translateY(${-moveHeight}px)`
-  renderLrc(index)
 }
 /**
  * 把时间（s）格式化为 min : sec
@@ -130,49 +114,23 @@ const fomateTime = (time) => {
   const sec = Math.floor(time % 60).toString().padStart(2, '0')
   return `${min}:${sec}`
 }
-
 /**
- * 播放进度条
+ * 进度条变化
  */
 const rateUpdate = () => {
   return (doms.audio.currentTime / doms.audio.duration) * 100
 }
-
-var duration //歌曲总时长
-//监听MP3数据加载完成
-doms.audio.addEventListener('loadedmetadata', () => {
+/**
+ * 记载完成时初始化MP3时间
+ */
+const onLoadedmetadata = () => {
   duration = fomateTime(doms.audio.duration)
   doms.endTime.innerHTML = duration
-  rateUpdate()
-})
-
-//监听歌曲播放
-doms.audio.addEventListener('timeupdate', () => {
-  doms.currentTime.innerHTML = fomateTime(doms.audio.currentTime)
-  doms.rate.style.width = `${rateUpdate()}%`
-  setOffSet()
-})
-doms.audio.addEventListener('canplaythrough',()=>{
-  doms.audio.play()
-})//后续增加提前load下一首
-
-//歌曲播放暂停
-doms.songBtn.addEventListener('click', () => {
-  isPlay = !isPlay
-  if (isPlay) {
-    doms.audio.play()
-  }else{
-    doms.audio.pause()
-  }
-})
-//键盘控制
-document.addEventListener('keyup', (e) => {
-  if (e.key === 'Enter') {
-    doms.songBtn.click()
-  }
-})
-
-//歌曲序号修改
+}
+/**
+ * 歌曲序号修改
+ * @param {Number} number 
+ */
 const songIndexUpdate = (number) => {
   songIndex += number
   if (songIndex >= songData.length) {
@@ -181,52 +139,87 @@ const songIndexUpdate = (number) => {
   if (songIndex < 0) {
     songIndex = songData.length - 1
   }
+  localStorage.setItem('songIndexStore', songIndex)
 }
-
-//监听播放结束
-const songEndSwitch = () => {
-  doms.audio.addEventListener('ended', () => {
-    songIndexUpdate(1)//默认播放下一首
-    localStorage.setItem('songIndexStore', songIndex)
-    mounted()
-    doms.audio.play()
-  })
-}
-
-
-doms.nextBtn.addEventListener('click', () => {
-  songIndexUpdate(1)
-  mounted()
-  doms.audio.play()
-})
-doms.lastBtn.addEventListener('click', () => {
-  songIndexUpdate(-1)
-  mounted()
-  doms.audio.play()
-})
-
-doms.audio.addEventListener('play',()=>{
-  isPlay = true
-  doms.songBtn.innerHTML = '<span class="iconfont icon-zanting"></span>'
-})
-doms.audio.addEventListener('pause',()=>{
-  isPlay = false
-  doms.songBtn.innerHTML = '<span class="iconfont icon-bofang"></span>'
-})
 //重置
 const reset = () => {
-  doms.ul.innerHTML = ''
   duration = 0
+  doms.ul.innerHTML = ''
   doms.rate.style.width = 0
 }
 /**
  * 构建
  */
-const mounted = async () => {
-  await initLrc()
-  await reset()
-  await createLrcElement()
+const mounted = () => {
+  reset()
+  initLrc()
+  createLrcElement()
 }
-
 mounted()
-songEndSwitch()
+
+  ; (function () {
+    //监听MP3数据加载完成
+    doms.audio.addEventListener('loadedmetadata', () => {
+      onLoadedmetadata()
+      rateUpdate()
+    })
+    doms.progress.addEventListener('click', (e) => {
+      const rate = (e.clientX - e.target.getBoundingClientRect().left) / doms.progress.offsetWidth
+      doms.rate.style.width = rate * 100 + '%'
+      doms.audio.currentTime = doms.audio.duration * rate
+    })
+    doms.progress.addEventListener('mouseenter', function () {
+      this.style.transform = `scaleY(1.4)`
+    })
+    doms.progress.addEventListener('mouseleave', function () {
+      this.style.transform = `scaleY(1)`
+    })
+    doms.nextBtn.addEventListener('click', () => {
+      songIndexUpdate(1)
+      mounted()
+      doms.audio.play()
+    })
+    doms.lastBtn.addEventListener('click', () => {
+      songIndexUpdate(-1)
+      mounted()
+      doms.audio.play()
+    })
+    doms.audio.addEventListener('play', () => {
+      isPlay = true
+      doms.songBtn.innerHTML = '<span class="iconfont icon-zanting"></span>'
+    })
+    doms.audio.addEventListener('pause', () => {
+      isPlay = false
+      doms.songBtn.innerHTML = '<span class="iconfont icon-bofang"></span>'
+    })
+    //监听播放结束
+    doms.audio.addEventListener('ended', () => {
+      songIndexUpdate(1)//默认播放下一首
+      mounted()
+      doms.audio.play()
+    })
+    //监听歌曲播放
+    doms.audio.addEventListener('timeupdate', () => {
+      doms.currentTime.innerHTML = fomateTime(doms.audio.currentTime)
+      doms.rate.style.width = `${rateUpdate()}%`
+      renderPlayer()
+    })
+    doms.audio.addEventListener('canplaythrough', () => {
+      // doms.audio.play()
+    })//后续增加提前load下一首
+    //歌曲播放暂停
+    doms.songBtn.addEventListener('click', () => {
+      isPlay = !isPlay
+      if (isPlay) {
+        doms.audio.play()
+      } else {
+        doms.audio.pause()
+      }
+    })
+    //键盘空格控制
+    document.addEventListener('keyup', (e) => {
+      if (e.key === ' ') {
+        doms.songBtn.click()
+      }
+    })
+  })()

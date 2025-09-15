@@ -1,4 +1,5 @@
 * {
+  user-select: none;
   padding: 0;
   margin: 0;
 }
@@ -66,21 +67,24 @@ body {
       height: 3px;
       border-radius: 2px;
       background-color: #aaa;
+      transition: all 0.5s;
+      &:hover {
+        cursor: pointer;
+      }
 
       .rate {
         position: relative;
         width: 0;
         height: 100%;
         background-color: #fff;
-        transition: all 0.5s;
+        transition: all 0.2s;
         border-radius: 2px;
-        cursor: pointer;
 
         &::after {
           content: "";
           position: absolute;
-          right: -1px;
-          bottom: -2px;
+          right: -2px;
+          bottom: -1.5px;
           display: block;
           width: 6px;
           height: 6px;
@@ -107,13 +111,15 @@ body {
         font-size: 25px;
         width: 30%;
         height: 40px;
-        margin:0 auto;
+        margin: 0 auto;
         margin-top: 10px;
       }
+
       .songBtn {
         // margin: 0 30px; 
       }
-      .nextBtn{
+
+      .nextBtn {
         margin-right: 10px;
       }
     }
